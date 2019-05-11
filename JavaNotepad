@@ -1,0 +1,502 @@
+package notepad_v_1;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.font.TextAttribute;
+import java.io.*;
+import java.lang.Thread.*;
+import java.lang.Object;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+
+public class mainframe extends Frame implements ActionListener,ItemListener{
+
+    JProgressBar current;
+    //Font Frame and its Components
+    //For Font Frame
+    Frame f3=new Frame("Font Format");
+    Label previewlab=new Label("Preview:");
+    Label preview=new Label("AaBbXxZz");
+
+    Choice font_size=new Choice();
+    Choice font_style=new Choice();
+    Choice font_get=new Choice();
+    Button ok1=new Button("OK");
+    Button cancel2=new Button("Reset & Close");
+
+    //For Save Frame
+    Frame f4=new Frame("Save");
+    Label inputfilename=new Label("Enter the filename as you want to save!!");
+    Label undone=new Label("FILE ALREADY EXISTS OR EMPTY FILENAME!!!");
+    Button exp_save=new Button("Browse");
+    Label done=new Label("Save SUCCESS!!!");
+    Label error=new Label("FILE CREATION/DIRECTORY ERROR ");
+    TextField inputname=new TextField();
+    Button Ok=new Button("Save");
+    Button cancel=new Button("Close");
+    Label txt=new Label(".txt");
+    Label path=new Label("Directory:MY DOCUMENTS");
+
+    //For Open Frame
+    Frame f5=new Frame("Open File");
+    Label currentdir=new Label("Current Directory:DOCUMENTS");
+    Label laboffile=new Label("List Of Files in DOCUMENTS");
+    List listfile=new List();
+    Button cancel1=new Button("Close");
+    Button openit=new Button("Open this");
+
+    // For updates and Version
+    static JFrame f6=new JFrame("Check for Updates");
+    static Label update=new Label("Checking For Updates");
+    static Label noupdate=new Label("No Update Found!!");
+
+    //For Jframe explorer
+    JFileChooser jf=new JFileChooser();
+    Frame f7=new Frame();
+    Button exp=new Button("Browse");
+
+    //Components for mainframe
+
+    TextArea ta=new TextArea();
+    MenuBar mb = new MenuBar();
+    Menu about=new Menu("About");
+    MenuItem checkupdates=new MenuItem("Check Updates!");
+    MenuItem version=new MenuItem("Version      1.1");
+    Menu file=new Menu("File");
+    MenuItem save=new MenuItem("Save",new MenuShortcut(KeyEvent.VK_S));
+    MenuItem openjframe=new MenuItem("Open",new MenuShortcut(KeyEvent.VK_O));
+
+    Menu Edit=new Menu("Edit");
+    MenuItem fonts=new MenuItem("Fonts",new MenuShortcut(KeyEvent.VK_F));
+    Graphics g=getGraphics();
+    public mainframe()
+    {
+        Image img = Toolkit.getDefaultToolkit().getImage("notepad-icon.gif");
+        setLayout(null);
+
+        ta.setBounds(10,50,1920,1080);
+        add(ta);
+        setMenuBar(mb);
+        file.add(save);
+        file.add(openjframe);
+        openjframe.addActionListener(this);
+        save.addActionListener(this);
+        mb.add(file);
+        Edit.add(fonts);
+        mb.add(Edit);
+        about.add(checkupdates);
+        about.add(version);
+        mb.add(about);
+        JOptionPane.showMessageDialog(this,"Created by KAIVAL PATEL:)");
+        checkupdates.addActionListener(this);
+        version.addActionListener(this);
+        fonts.addActionListener(this);
+
+    }
+    public static void main(String[] args) {
+        ImageIcon img = new ImageIcon("C:\\Users\\Kaival\\Downloads\\notepad.png");
+
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        double width = screenSize.getWidth();
+        double height = screenSize.getHeight();
+        int setsized=(int)width;
+        int setheighted=(int)height;
+        mainframe frame=new mainframe();
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                System.exit(1);
+
+            }
+        });
+
+        frame.setSize(setsized,setheighted);
+        frame.setTitle("NotePAD by Kaival::");
+        frame.setVisible(true);
+        frame.setResizable(true);
+        frame.setIconImage(img.getImage());
+        final int MAX = 100;
+
+        // creates progress bar
+        final JProgressBar pb = new JProgressBar();
+        pb.setForeground(new Color(18, 168, 38));
+        pb.setMinimum(0);
+        pb.setMaximum(MAX);
+        pb.setStringPainted(true);
+
+        // add progress bar
+        f6.setLayout(new FlowLayout());
+        f6.getContentPane().add(pb);
+
+
+        // update progressbar
+        update.setBounds(30,50,190,20);
+        update.setForeground(new Color(27, 132, 193));
+        f6.add(update);
+        for (int i = 0; i <= MAX; i++) {
+            final int currentValue = i;
+            try {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        pb.setValue(currentValue);
+                    }
+                });
+                java.lang.Thread.sleep(100);
+            } catch (InterruptedException e) {
+                JOptionPane.showMessageDialog(f6, e.getMessage());
+            }
+            System.out.println(pb.getValue());
+            if(pb.getValue()==100)
+            {
+                noupdate.setBounds(90,80,190,20);
+                noupdate.setForeground(new Color(216, 30, 67));
+                f6.add(noupdate);
+            }
+        }
+    }
+
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+
+        if(e.getSource()==checkupdates)
+        {
+            f6.setSize(300,150);
+            f6.setVisible(true);
+            f6.setLayout(null);
+            noupdate.setBounds(30,50,190,20);
+            f6.add(update);
+
+           f6.addWindowListener(new WindowAdapter() {
+                public void windowClosing(WindowEvent el) {
+                    f6.dispose();
+                }
+            });
+
+
+        }
+
+        if(e.getSource()==openjframe)
+        {
+            JFileChooser jFileChooser=new JFileChooser();
+            StringBuffer buffer;
+            buffer = new StringBuffer();
+            int result= jFileChooser.showOpenDialog(this);
+            if(result==JFileChooser.APPROVE_OPTION)
+            {
+                try {
+                    FileReader reader;
+                    reader = null;
+                    JOptionPane.showMessageDialog(this,"Text File Opened!!");
+                    File file=jFileChooser.getSelectedFile();
+                    reader=new FileReader(file);
+                    BufferedReader bufferedReader = new BufferedReader(reader);
+                    StringBuffer stringBuffer = new StringBuffer();
+                    String line;
+                    while ((line = bufferedReader.readLine()) != null) {
+                        stringBuffer.append(line);
+                        stringBuffer.append("\n");
+                    }
+                    reader.close();
+                    ta.setText(stringBuffer.toString());
+                } catch (FileNotFoundException ex)
+                {Logger.getLogger(mainframe.class.getName()).log(Level.SEVERE, null, ex);}
+
+                catch (IOException ex) {Logger.getLogger(mainframe.class.getName()).log(Level.SEVERE, null, ex);}
+
+
+
+            }
+
+        }
+
+
+
+        if(e.getSource()==save)
+        {
+            JFileChooser jFileChooser=new JFileChooser();
+            StringBuffer buffer;
+            buffer = new StringBuffer();
+            int result= jFileChooser.showSaveDialog(this);
+            if(result==JFileChooser.APPROVE_OPTION)
+            {
+                try {
+
+                    JOptionPane.showMessageDialog(this,"Text File Saved!!");
+                    File file=jFileChooser.getSelectedFile();
+                    FileWriter writer=new FileWriter(file+".txt");
+                    String gettext=ta.getText();
+                    writer.write(gettext);
+                    writer.close();
+                    setTitle(file.getName()+"-NotePAD by Kaival::");
+
+
+
+
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(mainframe.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    Logger.getLogger(mainframe.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+            }
+        }
+        if(e.getSource()==cancel)
+        {
+            f4.dispose();
+
+
+        }
+        if(e.getSource()==cancel1)
+        {
+            f5.dispose();
+
+
+        }
+        if(e.getSource()==cancel2)
+        {
+            Font tadefaultfont=new Font("Calibri",Font.PLAIN,12);
+            ta.setFont(tadefaultfont);
+            f3.dispose();
+        }
+        if(e.getSource()==ok1)
+
+        {
+            System.out.println("ACTION LISTENER OF OK VIA CANCEL2");
+            Font retainfont=ta.getFont();
+            f3.dispose();
+        }
+        if(e.getSource()==fonts)
+        {
+            Font small=new Font("Calibri",Font.PLAIN,10);
+            previewlab.setBounds(70,150,100,20);
+            previewlab.setFont(small);
+            f3.add(previewlab);
+            preview.setBounds(70,180,150,50);
+            f3.add(preview);
+            font_style.addItemListener(this);
+            f3.setLayout(null);
+            f3.setSize(400,300);
+            f3.setVisible(true);
+            f3.addWindowListener(new WindowAdapter() {
+                public void windowClosing(WindowEvent el) {
+                    f3.dispose();
+                }
+            });
+            if(font_size.getSelectedItem()==null)
+            {   font_size.add("14");
+                font_size.add("16");
+                font_size.add("18");
+                font_size.add("20");
+                font_size.add("22");
+                font_size.add("24");
+                font_size.add("26");
+                font_size.addItemListener(this);
+                Label fontsize =new Label("Font Size:");
+                fontsize.setBounds(300,40,150,20);
+                f3.add(fontsize);
+                font_size.setBounds(300, 70, 50, 100);
+                f3.add(font_size);
+            }
+
+            if(font_style.getSelectedItem()==null)
+            {
+                font_style.add("PLAIN");
+                font_style.add("BOLD");
+                font_style.add("ITALIC");
+                font_style.add("ITALIC+BOLD");
+                Label fontstyle =new Label("Font Style:");
+                fontstyle.setBounds(180,40,150,20);
+                f3.add(fontstyle);
+
+                font_style.setBounds(180,70,100,70);
+                f3.add(font_style);
+            }
+            font_style.addItemListener(this);
+
+            if(font_get.getSelectedItem()==null)
+            {
+
+                font_get.add("Calibri");
+
+
+
+                Label fonts =new Label("Fonts:");
+                fonts.setBounds(20,40,150,20);
+                f3.add(fonts);
+                font_get.setBounds(20,70,150,70);
+                f3.add(font_get);
+            }
+            font_get.addItemListener(this);
+            ok1.setBounds(80,250,50,20);
+            f3.add(ok1);
+            ok1.addActionListener(this);
+            cancel2.setBounds(150,250,100,20);
+            cancel2.setForeground(Color.RED);
+            f3.add(cancel2);
+            cancel2.addActionListener(this);
+
+        }
+
+    }
+
+
+    @Override
+    public void itemStateChanged(ItemEvent e) {
+
+        if(e.getSource()==listfile)
+        {
+            System.out.println("Its Called");
+            f5.add(openit);
+        }
+        if(e.getSource()==font_style)
+        {
+            if(font_style.getSelectedItem()=="ITALIC")
+            {
+
+
+                int int_size=Integer.parseInt(font_size.getSelectedItem());
+                Font tafont=new Font("Calibri",Font.ITALIC+bold_or_not(),int_size);
+                ta.setFont(tafont);
+                preview.setFont(tafont);
+            }
+            if(font_style.getSelectedItem()=="ITALIC+BOLD")
+            {
+
+
+                int int_size=Integer.parseInt(font_size.getSelectedItem());
+                Font tafont=new Font("Calibri",Font.ITALIC+Font.BOLD,int_size);
+                ta.setFont(tafont);
+                preview.setFont(tafont);
+            }
+            if(font_style.getSelectedItem()=="BOLD")
+            {
+
+
+                int int_size=Integer.parseInt(font_size.getSelectedItem());
+                Font tafont=new Font("Calibri",Font.BOLD+italic_or_not(),int_size);
+                ta.setFont(tafont);
+                preview.setFont(tafont);
+            }
+            if(font_style.getSelectedItem()=="PLAIN")
+
+            {
+
+                int int_size=Integer.parseInt(font_size.getSelectedItem());
+                Font tafont=new Font("Calibri",Font.PLAIN,int_size);
+                ta.setFont(tafont);
+                preview.setFont(tafont);
+
+            }
+
+        }
+        if(e.getSource()==font_size)
+        {
+
+            if(font_size.getSelectedItem()=="14")
+            {
+
+                int int_size =Integer.parseInt(font_size.getSelectedItem());
+                Font tafont=new Font("Calibri",Font.PLAIN+bold_or_not()+italic_or_not()+mix_font(),int_size);
+                ta.setFont(tafont);
+                preview.setFont(tafont);
+            }
+            if(font_size.getSelectedItem()=="16")
+            {
+                int int_size =Integer.parseInt(font_size.getSelectedItem());
+                Font tafont=new Font("Calibri",Font.PLAIN+bold_or_not()+italic_or_not()+mix_font(),int_size);
+                ta.setFont(tafont);
+                preview.setFont(tafont);
+
+            }
+            if(font_size.getSelectedItem()=="18")
+            {
+
+                int int_size=Integer.parseInt(font_size.getSelectedItem());
+                Font tafont=new Font("Calibri",Font.PLAIN+bold_or_not()+italic_or_not()+mix_font(),int_size);
+                ta.setFont(tafont);
+                preview.setFont(tafont);
+            }
+            if(font_size.getSelectedItem()=="20")
+            {
+
+                int int_size=Integer.parseInt(font_size.getSelectedItem());
+                Font tafont=new Font("Calibri",Font.PLAIN+bold_or_not()+italic_or_not()+mix_font(),int_size);
+                ta.setFont(tafont);
+                preview.setFont(tafont);
+            }
+            if(font_size.getSelectedItem()=="22")
+            {
+
+                int int_size=Integer.parseInt(font_size.getSelectedItem());
+                Font tafont=new Font("Calibri",Font.PLAIN+bold_or_not()+italic_or_not()+mix_font(),int_size);
+                ta.setFont(tafont);
+                preview.setFont(tafont);
+            }
+            if(font_size.getSelectedItem()=="24")
+            {
+
+                int int_size=Integer.parseInt(font_size.getSelectedItem());
+                Font tafont=new Font("Calibri",Font.PLAIN+bold_or_not()+italic_or_not()+mix_font(),int_size);
+                ta.setFont(tafont);
+                preview.setFont(tafont);
+            }
+            if(font_size.getSelectedItem()=="26")
+            {
+
+                int int_size=Integer.parseInt(font_size.getSelectedItem());
+                Font tafont=new Font("Calibri",Font.PLAIN+bold_or_not()+italic_or_not()+mix_font(),int_size);
+                ta.setFont(tafont);
+                preview.setFont(tafont);
+            }
+        }
+
+    }
+    public int bold_or_not()
+    {
+        if(font_style.getSelectedItem()=="BOLD")
+        {
+
+            return Font.BOLD;
+        }
+        else
+        {
+            return Font.PLAIN;
+        }
+
+    }
+    public int italic_or_not()
+    {
+        if(font_style.getSelectedItem()=="ITALIC")
+        {
+
+            return Font.ITALIC;
+        }
+        else
+        {
+            return Font.PLAIN;
+        }
+
+    }
+    public int mix_font()
+    {
+        if(font_style.getSelectedItem()=="ITALIC+BOLD")
+        {
+
+            return Font.BOLD+Font.ITALIC;
+        }
+        else
+        {
+            return Font.PLAIN;
+        }
+
+    }
+
+
+
+}
